@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GPTチャットボット</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+        }
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        select {
+            width: 50%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #5a67d8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4c51bf;
+        }
+        #response {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e2e8f0;
+        }
+        .message.user {
+            background-color: #c3dafe;
+            text-align: right;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>GPTチャットボット</h1>
+    <form id="ask-form">
+        <input type="text" id="user_input" name="user_input" placeholder="Chat with ChatGPT!" required>
+        <select id="gpt_model" name="gpt_model" required>
+            <option value="gpt-3.5-turbo">gpt-3.5-turbo</option> 
+            <option value="gpt-4o">gpt-4o</option> 
+            <option value="gpt-4-turbo">gpt-4-turbo</option> 
+        </select>
+        <button type="submit">入力</button>
+    </form>
+    <div id="response"></div>
+
+    <script>
+        $(document).ready(function(){
+            $('#ask-form').on('submit', function(event){
+                event.preventDefault();
+                $.ajax({
+                    url: '/ask',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(data){
+                        var userMessage = '<div class="message user">' + $('#user_input').val() + '</div>';
+                        var botMessage = '<div class="message bot">' + data.response + '</div>';
+                        $('#response').append(userMessage).append(botMessage);
+                        $('#user_input').val('');
+                    }
+                });
+            });
+
+            // 初期表示で履歴を読み込む
+            $.ajax({
+                url: '/history',
+                method: 'GET',
+                success: function(data){
+                    data.history.forEach(function(item){
+                        var userMessage = '<div class="message user">' + item.user + '</div>';
+                        var botMessage = '<div class="message bot">' + item.bot + '</div>';
+                        $('#response').append(userMessage).append(botMessage);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
